@@ -1,0 +1,14 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ include file="TsqlTUnitTestGenerator.tt"  #>
+<#
+// <copyright file="TestProcedures.tt" company="">
+//  Copyright © . All Rights Reserved.
+// </copyright>
+
+    TsqlTUnitTestGenerator generator = new TsqlTUnitTestGenerator();
+    generator.SQLSErver = @"(localdb)\ProjectsV12";
+    generator.DatabaseName = "[YOUR DATABASE NAME]";
+    generator.testNameSpace = generator.DatabaseName; //DESTINATION FOLDER NAME FOR GENERATED UNIT TESTS
+    generator.Run();
+
+#>

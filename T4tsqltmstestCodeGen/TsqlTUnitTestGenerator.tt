@@ -1,0 +1,60 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Data" #>
+<#@ assembly name="Microsoft.SqlServer.ConnectionInfo" #>
+<#@ assembly name="Microsoft.SqlServer.Smo" #>
+<#@ assembly name="Microsoft.SqlServer.Management.Sdk.Sfc" #>
+
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Data" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="Microsoft.SqlServer.Management.Smo" #>
+<#@ import namespace="Microsoft.SqlServer.Management.Common" #>
+
+<#@ include file="T4Toolbox.tt" #>
+<#@ include file="CreateClassFile.tt" #>
+<#@ include file="CreateResourceFile.tt" #>
+<#+ 
+   
+    public class TsqlTUnitTestGenerator : Generator
+    {
+        public string SQLSErver;
+        public string DatabaseName;
+        public string testNameSpace;
+
+        private CreateClassFile createClassFile = new CreateClassFile();
+        private CreateResourceFile createResourceFile = new CreateResourceFile();
+        protected override void RunCore()
+        {
+            ServerConnection serverConnection = new ServerConnection(SQLSErver);
+            Server server = new Server(serverConnection);
+            Database database = server.Databases[DatabaseName];
+            Schema[] schemas = new Schema[database.Schemas.Count];
+            StoredProcedure[] storedProcedures = new StoredProcedure[database.StoredProcedures.Count];
+
+            database.Schemas.CopyTo(schemas,0);
+            database.StoredProcedures.CopyTo(storedProcedures, 0);
+
+            var tsqlSchemas = schemas.Where(s => s.ExtendedProperties.Contains("tSQLt.TestClass")).Select(s => s.Name.Replace("-", ""));
+
+            foreach (string tsqlSchema in tsqlSchemas)
+            {
+                var spList = storedProcedures.Where(
+                    sp =>
+                    sp.Schema.Equals(tsqlSchema)
+                    && sp.Name.StartsWith("test", StringComparison.CurrentCultureIgnoreCase))
+                    .Select(sp => sp.Name.Replace("-", ""));
+                
+                this.createClassFile.SqlSchemaName = tsqlSchema;
+                this.createClassFile.ClassNamespace = testNameSpace;
+                this.createClassFile.StoreProcs = spList.ToList();
+                this.createClassFile.RenderToFile(string.Format("{0}\\{1}.cs",testNameSpace,tsqlSchema));
+                this.createResourceFile.SqlSchemaName = tsqlSchema;
+                this.createResourceFile.StoreProcs = spList.ToList();
+                this.createResourceFile.RenderToFile(string.Format("{0}\\{1}.resx",testNameSpace,tsqlSchema));     
+            }
+        }
+    }
+
+ #>

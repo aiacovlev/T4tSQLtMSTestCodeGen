@@ -1,0 +1,34 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>T4tSQLtMSTestCodeGen</id>
+        <version>1.0.0</version>
+        <title>T4 templates for tSQLt MS Test code generation</title>
+        <authors>uksoftdev</authors>
+        <owners>CoStar Group, Inc.</owners>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Contains the T4's required by to generate test classes that can execute tSQLt tests during TFS build.</description>
+        <summary>T4 Templates</summary>
+        <tags>T4 tSQLt SSDT</tags>
+        <references>
+        </references>
+        <dependencies>
+        </dependencies>
+        <releaseNotes> 
+        </releaseNotes>
+        <frameworkAssemblies>
+          <frameworkAssembly assemblyName="System.Data" targetFramework="net40" />
+          <frameworkAssembly assemblyName="Microsoft.Data.Tools.Components" targetFramework="net40" />
+          <frameworkAssembly assemblyName="Microsoft.Data.Tools.Schema.Sql.UnitTesting" targetFramework="net40" />
+        </frameworkAssemblies>
+    </metadata>
+    <files>
+      <file src="app.config" target="content\app.config" />
+	    <file src="runme.tt" target="content\runme.tt" />
+      <file src="CreateClassFile.tt" target="content\CreateClassFile.tt"  />
+      <file src="CreateResourceFile.tt" target="content\CreateResourceFile.tt" />
+      <file src="TsqlTUnitTestGenerator.tt" target="content\TsqlTUnitTestGenerator.tt" />
+      
+      <file src="Install.ps1" target="tools\install.ps1" />
+    </files>
+</package>

@@ -1,0 +1,157 @@
+﻿<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#+ 
+    public class CreateClassFile : CSharpTemplate
+    {
+        public string ClassNamespace;
+        public string SqlSchemaName; 
+        public List<string> StoreProcs;
+        public override string TransformText()
+        {
+#>
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
+using System.Text;
+using Microsoft.Data.Tools.Schema.Sql.UnitTesting;
+using Microsoft.Data.Tools.Schema.Sql.UnitTesting.Conditions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace <#= ClassNamespace #>
+{
+    [TestClass()]
+    public class <#= SqlSchemaName #> : SqlDatabaseTestClass
+    {
+
+        public <#= SqlSchemaName #>()
+        {
+            InitializeComponent();
+        }
+
+        [TestInitialize()]
+        public void TestInitialize()
+        {
+            base.InitializeTest();
+        }
+        [TestCleanup()]
+        public void TestCleanup()
+        {
+            base.CleanupTest();
+        }
+
+        #region Designer support code
+
+        /// <summary> 
+        /// Required method for Designer support - do not modify 
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(<#= SqlSchemaName #>));
+         
+            Microsoft.Data.Tools.Schema.Sql.UnitTesting.Conditions.ScalarValueCondition scalarSuccessValue;
+            scalarSuccessValue = new Microsoft.Data.Tools.Schema.Sql.UnitTesting.Conditions.ScalarValueCondition();
+
+            // 
+            // scalarSuccessValue
+            // 
+            scalarSuccessValue.ColumnNumber = 1;
+            scalarSuccessValue.Enabled = true;
+            scalarSuccessValue.ExpectedValue = "Success";
+            scalarSuccessValue.Name = "scalarSuccessValue";
+            scalarSuccessValue.NullExpected = false;
+            scalarSuccessValue.ResultSet = 1;
+            scalarSuccessValue.RowNumber = 1;            
+
+            <#+ foreach( string sp in StoreProcs)
+        {
+            string testName = sp.Substring(5).Replace(" ",string.Empty);
+            #>
+            
+            Microsoft.Data.Tools.Schema.Sql.UnitTesting.SqlDatabaseTestAction <#= testName #>_TestAction;      
+            this.<#= testName #>Data = new Microsoft.Data.Tools.Schema.Sql.UnitTesting.SqlDatabaseTestActions();
+            <#= testName #>_TestAction = new Microsoft.Data.Tools.Schema.Sql.UnitTesting.SqlDatabaseTestAction();
+            
+            // 
+            // <#= testName #>_TestAction
+            // 
+            <#= testName #>_TestAction.Conditions.Add(scalarSuccessValue);
+            resources.ApplyResources(<#= testName #>_TestAction, "<#= testName #>_TestAction");
+            
+            // 
+            // <#= testName #>Data
+            // 
+            this.<#= testName #>Data.PosttestAction = null;
+            this.<#= testName #>Data.PretestAction = null;
+            this.<#= testName #>Data.TestAction = <#= testName #>_TestAction;
+            <#+
+        }
+            #>             
+        }
+
+        #endregion
+
+
+        #region Additional test attributes
+        //
+        // You can use the following additional attributes as you write your tests:
+        //
+        // Use ClassInitialize to run code before running the first test in the class
+        // [ClassInitialize()]
+        // public static void MyClassInitialize(TestContext testContext) { }
+        //
+        // Use ClassCleanup to run code after all tests in a class have run
+        // [ClassCleanup()]
+        // public static void MyClassCleanup() { }
+        //
+        #endregion
+
+
+        <#+ foreach( string sp in StoreProcs)
+        {
+            string testName = sp.Substring(5).Replace(" ",string.Empty);
+            #>
+
+        [TestMethod()]
+        public void <#= testName #>()
+        {
+            SqlDatabaseTestActions testActions = this.<#= testName #>Data;
+            // Execute the pre-test script
+            // 
+            System.Diagnostics.Trace.WriteLineIf((testActions.PretestAction != null), "Executing pre-test script...");
+            SqlExecutionResult[] pretestResults = TestService.Execute(this.PrivilegedContext, this.PrivilegedContext, testActions.PretestAction);
+            try
+            {
+                // Execute the test script
+                // 
+                System.Diagnostics.Trace.WriteLineIf((testActions.TestAction != null), "Executing test script...");
+                SqlExecutionResult[] testResults = TestService.Execute(this.ExecutionContext, this.PrivilegedContext, testActions.TestAction);
+            }
+            finally
+            {
+                // Execute the post-test script
+                // 
+                System.Diagnostics.Trace.WriteLineIf((testActions.PosttestAction != null), "Executing post-test script...");
+                SqlExecutionResult[] posttestResults = TestService.Execute(this.PrivilegedContext, this.PrivilegedContext, testActions.PosttestAction);
+            }
+        }
+
+        private SqlDatabaseTestActions <#= testName #>Data;             
+
+            <#+
+        }
+            #>             
+
+        
+    }
+}
+<#+ 
+             return this.GenerationEnvironment.ToString();
+           } 
+}
+
+ #>
