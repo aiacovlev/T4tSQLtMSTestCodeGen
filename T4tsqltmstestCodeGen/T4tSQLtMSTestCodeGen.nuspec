@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>T4tSQLtMSTestCodeGen</id>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
         <title>T4 templates for tSQLt MS Test code generation</title>
         <authors>uksoftdev</authors>
         <owners>CoStar Group, Inc.</owners>
